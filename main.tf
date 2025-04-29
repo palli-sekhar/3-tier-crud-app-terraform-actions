@@ -82,4 +82,3 @@ resource "aws_instance" "web" {
     Name = "3-tier-app"
   }
 }
-
