@@ -41,7 +41,7 @@ jobs:
         echo "${{ secrets.EC2_SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
         chmod 600 ~/.ssh/id_rsa
 
-    - name: Test SSH Connection
+    -  - name: Test SSH Connection
       run: |
-        ssh -o StrictHostKeyChecking=no ubuntu@${{ secrets.EC2_PUBLIC_IP }} echo "SSH Connection Successful!"
+        ssh -o StrictHostKeyChecking=no ubuntu@52.66.195.234 echo "SSH Connection Successful!"
 
