@@ -7,7 +7,7 @@ variable "aws_region" {
 # AMI ID (Ubuntu 22.04 LTS for Mumbai region)
 variable "ami_id" {
   description = "The AMI ID to use for the EC2 instance"
-  default     = "ami-04a5e7ddb85b4ddec"
+  default     = "ami-0e35ddab05955cf57"
 }
 
 # Instance type
