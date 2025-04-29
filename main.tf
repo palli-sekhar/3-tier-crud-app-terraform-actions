@@ -14,6 +14,15 @@ resource "aws_vpc" "main" {
   }
 }
 
+# Internet Gateway
+resource "aws_internet_gateway" "igw" {
+  vpc_id = aws_vpc.main.id
+
+  tags = {
+    Name = "3tier-igw"
+  }
+}
+
 # Public Subnet
 resource "aws_subnet" "public_subnet" {
   vpc_id                  = aws_vpc.main.id
@@ -24,6 +33,26 @@ resource "aws_subnet" "public_subnet" {
   tags = {
     Name = "public-subnet-1"
   }
+}
+
+# Route Table
+resource "aws_route_table" "public_rt" {
+  vpc_id = aws_vpc.main.id
+
+  route {
+    cidr_block = "0.0.0.0/0"
+    gateway_id = aws_internet_gateway.igw.id
+  }
+
+  tags = {
+    Name = "public-route-table"
+  }
+}
+
+# Route Table Association
+resource "aws_route_table_association" "public_association" {
+  subnet_id      = aws_subnet.public_subnet.id
+  route_table_id = aws_route_table.public_rt.id
 }
 
 # Security Group
@@ -74,8 +103,8 @@ resource "aws_instance" "web" {
   vpc_security_group_ids = [aws_security_group.web_sg.id]
 
   depends_on = [
-    aws_subnet.public_subnet,
-    aws_security_group.web_sg
+    aws_internet_gateway.igw,
+    aws_route_table_association.public_association
   ]
 
   tags = {
