@@ -20,6 +20,7 @@ resource "aws_subnet" "public_subnet" {
   cidr_block              = "10.0.1.0/24"
   availability_zone       = "ap-south-1a"
   map_public_ip_on_launch = true
+
   tags = {
     Name = "public-subnet-1"
   }
@@ -28,7 +29,7 @@ resource "aws_subnet" "public_subnet" {
 # Security Group
 resource "aws_security_group" "web_sg" {
   name        = "web-sg"
-  description = "Allow SSH, HTTP, HTTPS"
+  description = "Allow SSH, HTTP, and HTTPS"
   vpc_id      = aws_vpc.main.id
 
   ingress {
@@ -58,15 +59,24 @@ resource "aws_security_group" "web_sg" {
     protocol    = "-1"
     cidr_blocks = ["0.0.0.0/0"]
   }
+
+  tags = {
+    Name = "web-sg"
+  }
 }
 
 # EC2 Instance
 resource "aws_instance" "web" {
-  ami             = var.ami_id 
-  instance_type   = var.instance_type  
-  subnet_id       = aws_subnet.public_subnet.id
-  key_name        = var.key_name  
-  security_groups = [aws_security_group.web_sg.id]
+  ami                    = var.ami_id
+  instance_type          = var.instance_type
+  subnet_id              = aws_subnet.public_subnet.id
+  key_name               = var.key_name
+  vpc_security_group_ids = [aws_security_group.web_sg.id]
+
+  depends_on = [
+    aws_subnet.public_subnet,
+    aws_security_group.web_sg
+  ]
 
   tags = {
     Name = "3-tier-app"
