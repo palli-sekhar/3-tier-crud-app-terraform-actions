@@ -10,7 +10,7 @@ resource "aws_vpc" "main" {
   enable_dns_hostnames = true
 
   tags = {
-    Name = "crud-3tier-vpc"
+    Name = "3-tier-vpc"
   }
 }
 
@@ -108,6 +108,6 @@ resource "aws_instance" "web" {
   ]
 
   tags = {
-    Name = "crud3-tier-app"
+    Name = "3-tier-app"
   }
 }
