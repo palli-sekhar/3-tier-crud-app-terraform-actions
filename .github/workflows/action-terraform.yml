@@ -7,7 +7,7 @@ on:
 
 jobs:
   terraform:
-    name: Terraform - Create EC2 Instance
+    name: Terraform - Creat EC2 Instance
     runs-on: ubuntu-latest
 
     steps:
