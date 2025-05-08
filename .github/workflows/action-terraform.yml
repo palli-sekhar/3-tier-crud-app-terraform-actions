@@ -7,7 +7,7 @@ on:
 
 jobs:
   terraform:
-    name: Terraform - Creat EC2 Instance
+    name: Terraform - Create EC2 Instance
     runs-on: ubuntu-latest
 
     steps:
@@ -17,21 +17,38 @@ jobs:
     - name: Setup Terraform
       uses: hashicorp/setup-terraform@v3
 
+    - name: Parse terraform.tfvars
+      id: parse_tfvars
+      run: |
+        export AWS_ACCESS_KEY_ID=$(grep 'aws_access_key' terraform.tfvars | cut -d '"' -f2)
+        export AWS_SECRET_ACCESS_KEY=$(grep 'aws_secret_key' terraform.tfvars | cut -d '"' -f2)
+        export AWS_REGION=$(grep 'aws_region' terraform.tfvars | cut -d '"' -f2)
+        export AMI_ID=$(grep 'ami_id' terraform.tfvars | cut -d '"' -f2)
+        export INSTANCE_TYPE=$(grep 'instance_type' terraform.tfvars | cut -d '"' -f2)
+        export KEY_NAME=$(grep 'key_name' terraform.tfvars | cut -d '"' -f2)
+        echo "AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID" >> $GITHUB_ENV
+        echo "AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY" >> $GITHUB_ENV
+        echo "AWS_REGION=$AWS_REGION" >> $GITHUB_ENV
+        echo "AMI_ID=$AMI_ID" >> $GITHUB_ENV
+        echo "INSTANCE_TYPE=$INSTANCE_TYPE" >> $GITHUB_ENV
+        echo "KEY_NAME=$KEY_NAME" >> $GITHUB_ENV
+
     - name: Terraform Init
       run: terraform init
 
     - name: Terraform Plan
-      run: terraform plan 
+      run: terraform plan -var-file="terraform.tfvars"
       env:
-        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        AWS_ACCESS_KEY_ID: ${{ env.AWS_ACCESS_KEY_ID }}
+        AWS_SECRET_ACCESS_KEY: ${{ env.AWS_SECRET_ACCESS_KEY }}
+        AWS_REGION: ${{ env.AWS_REGION }}
 
     - name: Terraform Apply
-      run: terraform apply -auto-approve
-
+      run: terraform apply -auto-approve -var-file="terraform.tfvars"
       env:
-        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        AWS_ACCESS_KEY_ID: ${{ env.AWS_ACCESS_KEY_ID }}
+        AWS_SECRET_ACCESS_KEY: ${{ env.AWS_SECRET_ACCESS_KEY }}
+        AWS_REGION: ${{ env.AWS_REGION }}
 
   verify-ec2:
     name: Verify EC2 Connection
