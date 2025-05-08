@@ -11,44 +11,27 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-    - name: Setup Terraform
-      uses: hashicorp/setup-terraform@v3
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
 
-    - name: Parse terraform.tfvars
-      id: parse_tfvars
-      run: |
-        export AWS_ACCESS_KEY_ID=$(grep 'aws_access_key' terraform.tfvars | cut -d '"' -f2)
-        export AWS_SECRET_ACCESS_KEY=$(grep 'aws_secret_key' terraform.tfvars | cut -d '"' -f2)
-        export AWS_REGION=$(grep 'aws_region' terraform.tfvars | cut -d '"' -f2)
-        export AMI_ID=$(grep 'ami_id' terraform.tfvars | cut -d '"' -f2)
-        export INSTANCE_TYPE=$(grep 'instance_type' terraform.tfvars | cut -d '"' -f2)
-        export KEY_NAME=$(grep 'key_name' terraform.tfvars | cut -d '"' -f2)
-        echo "AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID" >> $GITHUB_ENV
-        echo "AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY" >> $GITHUB_ENV
-        echo "AWS_REGION=$AWS_REGION" >> $GITHUB_ENV
-        echo "AMI_ID=$AMI_ID" >> $GITHUB_ENV
-        echo "INSTANCE_TYPE=$INSTANCE_TYPE" >> $GITHUB_ENV
-        echo "KEY_NAME=$KEY_NAME" >> $GITHUB_ENV
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
 
-    - name: Terraform Init
-      run: terraform init
+      - name: Terraform Init
+        run: terraform init
 
-    - name: Terraform Plan
-      run: terraform plan -var-file="terraform.tfvars"
-      env:
-        AWS_ACCESS_KEY_ID: ${{ env.AWS_ACCESS_KEY_ID }}
-        AWS_SECRET_ACCESS_KEY: ${{ env.AWS_SECRET_ACCESS_KEY }}
-        AWS_REGION: ${{ env.AWS_REGION }}
+      - name: Terraform Plan
+        run: terraform plan -var-file="terraform.tfvars"
 
-    - name: Terraform Apply
-      run: terraform apply -auto-approve -var-file="terraform.tfvars"
-      env:
-        AWS_ACCESS_KEY_ID: ${{ env.AWS_ACCESS_KEY_ID }}
-        AWS_SECRET_ACCESS_KEY: ${{ env.AWS_SECRET_ACCESS_KEY }}
-        AWS_REGION: ${{ env.AWS_REGION }}
+      - name: Terraform Apply
+        run: terraform apply -auto-approve -var-file="terraform.tfvars"
 
   verify-ec2:
     name: Verify EC2 Connection
@@ -56,11 +39,11 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-    - name: Setup SSH
-      run: |
-        mkdir -p ~/.ssh
-        echo "${{ secrets.EC2_SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
-        chmod 600 ~/.ssh/id_rsa
+      - name: Setup SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.EC2_SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
